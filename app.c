@@ -37,7 +37,6 @@ void add_train(struct train** head, struct train new_train) {
 
 // Функция для написания поезда
 void print_train(struct train one_train, int number) {
-  fflush(stdin);
   printf(
       "• (#%d) Інформація про розклад\n"
       "Місце признач.:\t%s\n"
@@ -63,7 +62,6 @@ void save_to_file(struct train* head, const char* filename) {
   }
   fclose(fp);
 }
-////////////////////////////////////////////////////
 
 // Функция для считывания данных из файла и записи их в стек
 struct train* load_from_file(const char* filename) {
@@ -105,23 +103,31 @@ struct train* load_from_file(const char* filename) {
 // Функция добавления нового поезда
 void add_new_train(struct train** head) {
   struct train new_train;
+
+  // Для того, чтобы в буфере не оставались знаки переноса строки
   while (getchar() != '\n')
-    ;  // Считываем и удаляем все символы из входного буфера
+    ;
+
   printf("Введіть інформацію про новий поїзд:\n");
+
   printf("• Місце призначення: ");
   scanf("%s", new_train.destination);
+
   printf("• Номер поїзду: ");
   scanf("%d", &new_train.train_number);
+
   printf("• Час відправлення: ");
   scanf("%s", new_train.departure_time);
+
   printf("• Час прибуття: ");
   scanf("%s", new_train.arrival_time);
+
   printf("• Ціна білету: ");
   scanf("%lf", &new_train.ticket_price);
 
   add_train(head, new_train);
   clear_terminal();
-  // save_to_file(*head, TRAINS_PATH);
+
   printf("• Новий рейс був успішно доданий та збережений в файл %s\n",
          TRAINS_PATH);
 }
@@ -135,25 +141,26 @@ void delete_train(struct train** head) {
   printf("• Вкажіть номер розкладу: ");
   scanf("%d", &number);
 
-  if (number == 1) {  // Если удаляем первый элемент
+  // Если удаляем первый элемент
+  if (number == 1) {
     *head = current->next;
     free(current);
     return;
   }
 
-  while (i < number && current != NULL) {  // Поиск элемента по номеру
+  // Поиск элемента по номеру
+  while (i < number && current != NULL) {
     previous = current;
     current = current->next;
     i++;
   }
 
-  if (current == NULL) {  // Если элемент не найден
-    printf("Element with number %d not found.\n", number);
+  if (current == NULL) {
+    printf("• Розкладу з номером #%d не знайдено.\n", number);
     return;
   }
 
-  previous->next = current->next;  // Удаление элемента
-  // save_to_file(*head, TRAINS_PATH);
+  previous->next = current->next;
   free(current);
 }
 
@@ -220,8 +227,7 @@ void show_train_by_destination(struct train* head) {
     current = current->next;
   }
   if (!found) {
-    printf("Напрямку \"%s\" не знайдено.\n",
-           destination);  // Если направление не найдено
+    printf("Напрямку \"%s\" не знайдено.\n", destination);
   }
 }
 
@@ -280,9 +286,8 @@ void delete_trains_by_destination(struct train** head) {
   struct train* current = *head;
   struct train* prev = NULL;
 
-  // Перебираем все элементы списка
   while (current != NULL) {
-    // Если направление совпадает, удаляем поезд
+    // Если направление совпадает
     if (strcmp(current->destination, destination) == 0) {
       // Если удаляемый элемент первый в списке
       if (prev == NULL) {
@@ -292,7 +297,7 @@ void delete_trains_by_destination(struct train** head) {
       }
       struct train* temp = current;
       current = current->next;
-      free(temp);  // Освобождаем память удаленного элемента
+      free(temp);
     } else {
       prev = current;
       current = current->next;
@@ -309,21 +314,21 @@ void swap_nodes(struct train* node1, struct train* node2) {
   char temp_arrival_time[10];
   double temp_ticket_price;
 
-  // Сохраняем значения полей первого узла
+  // Сохраняем значения полей первой ноды
   strcpy(temp_destination, node1->destination);
   temp_train_number = node1->train_number;
   strcpy(temp_departure_time, node1->departure_time);
   strcpy(temp_arrival_time, node1->arrival_time);
   temp_ticket_price = node1->ticket_price;
 
-  // Копируем значения полей второго узла в первый узел
+  // Копируем значения полей в первую ноду
   strcpy(node1->destination, node2->destination);
   node1->train_number = node2->train_number;
   strcpy(node1->departure_time, node2->departure_time);
   strcpy(node1->arrival_time, node2->arrival_time);
   node1->ticket_price = node2->ticket_price;
 
-  // Копируем сохраненные значения полей первого узла во второй узел
+  // Копируем сохраненные значения полей первой ноды во вторую
   strcpy(node2->destination, temp_destination);
   node2->train_number = temp_train_number;
   strcpy(node2->departure_time, temp_departure_time);
@@ -337,7 +342,7 @@ void sort_trains_by_time(struct train* head) {
   struct train* next_node;
   int swapped;
 
-  // Если список пуст или состоит из одного элемента, сортировка не нужна
+  // Если head пустой или только один элемент
   if (head == NULL || head->next == NULL) {
     return;
   }
@@ -349,7 +354,8 @@ void sort_trains_by_time(struct train* head) {
     while (current->next != NULL) {
       next_node = current->next;
 
-      // Если время следующего узла меньше времени текущего узла, меняем их местами
+      // Если время следующего узла меньше времени текущего узла, меняем их
+      // местами
       if (strcmp(current->departure_time, next_node->departure_time) > 0) {
         swap_nodes(current, next_node);
         swapped = 1;
@@ -363,10 +369,13 @@ void sort_trains_by_time(struct train* head) {
 int main() {
   SetConsoleCP(1251);
   SetConsoleOutputCP(1251);
+
+  // Загрузка данных из файла в стек при запуске
   struct train* trains = load_from_file(TRAINS_PATH);
   int choice = 0;
 
   while (1) {
+    // Очистка буфера stdin (если вдруг остались данные после scanf)
     fflush(stdin);
 
     printf(
@@ -385,30 +394,39 @@ int main() {
     scanf("%d", &choice);
     switch (choice) {
       case 1:
+        clear_terminal();
         add_new_train(&trains);
         break;
       case 2:
+        clear_terminal();
         delete_train(&trains);
         break;
       case 3:
+        clear_terminal();
         edit_element_by_number(trains);
         break;
       case 4:
+        clear_terminal();
         print_all_trains(trains);
         break;
       case 5:
+        clear_terminal();
         show_train_by_destination(trains);
         break;
       case 6:
+        clear_terminal();
         show_train_by_number_and_destination(trains);
         break;
       case 7:
+        clear_terminal();
         show_train_info(trains);
         break;
       case 8:
+        clear_terminal();
         delete_trains_by_destination(&trains);
         break;
       case 9:
+        clear_terminal();
         sort_trains_by_time(trains);
         print_all_trains(trains);
         break;
@@ -420,6 +438,7 @@ int main() {
         printf("• Ви ввели невідому дію.\n");
         break;
     }
+    // Сохранение данных в файлах после каждой команды
     save_to_file(trains, TRAINS_PATH);
   }
 
